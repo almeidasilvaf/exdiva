@@ -4,7 +4,12 @@
 \alias{aggregate_to_tissue}
 \title{Aggregate expression to tissue level}
 \usage{
-aggregate_to_tissue(se, tissue_column, aggregation_method = "median")
+aggregate_to_tissue(
+  se,
+  tissue_column,
+  assay_name = NULL,
+  aggregation_method = "median"
+)
 }
 \arguments{
 \item{se}{A \code{SummarizedExperiment} object with expression data in
@@ -12,6 +17,9 @@ TPM (or normalized by library size) and a \code{colData} slot.}
 
 \item{tissue_column}{Character indicating the name of the column
 in \code{colData(se)} containing tissue information for each sample.}
+
+\item{assay_name}{Character specifying the name of the assay to use. If
+NULL, the first assay will be extracted. Default: NULL.}
 
 \item{aggregation_method}{Character indicating the method to use to
 aggregate samples from the same tissue before calculating \eqn{\tau}

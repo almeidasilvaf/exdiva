@@ -2,10 +2,13 @@
 
 #' Calculate correlation coefficients and permutation P-values for gene pairs
 #'
-#' @param se A `SummarizedExperiment` object with expression data.
+#' @param se A `SummarizedExperiment` or `SingleCellExperiment` or
+#' `SpatialExperiment` object with expression data.
 #' @param dups A data frame of duplicate pairs, with duplicated genes
 #' for each pair in columns 1 and 2. Additional columns are allowed, and will
 #' be ignored if present.
+#' @param assay_name Character specifying the name of the assay to use. If
+#' NULL, the first assay will be extracted. Default: NULL.
 #' @param method Character indicating which correlation coefficient to compute.
 #' One of 'pearson', 'spearman', or 'kendall'. Default: 'spearman'.
 #' 
@@ -17,7 +20,8 @@
 #'
 #' @importFrom SummarizedExperiment assay
 #' @importFrom stats cor sd
-#' @rdname calc_cor
+#' @rdname calculate_cor
+#' @export
 #' @examples
 #' # Load data
 #' data(ath_se)
@@ -29,9 +33,10 @@
 #' 
 #' # Calculate correlation
 #' cor_df <- calculate_cor(se, dups, method = "pearson")
-calculate_cor <- function(se, dups, method = "spearman") {
+calculate_cor <- function(se, dups, assay_name = NULL, method = "spearman") {
     
-    exp <- assay(se)
+    if(is.null(assay_name)) { assay_name <- 1 }
+    exp <- assay(se, assay_name)
     genes <- rownames(se)
     
     # Remove genes with zero standard deviation
@@ -109,7 +114,6 @@ calculate_tau <- function(aggregated_exp, log = TRUE) {
     # Calculate Tau
     tau <- apply(fexp, 1, function(x) {
         
-        v <- NA
         if(all(!is.na(x)) & min(x, na.rm = TRUE) >= 0) {
             v <- 0
             if(max(x) != 0) {
@@ -151,6 +155,8 @@ calculate_tau <- function(aggregated_exp, log = TRUE) {
 #'   is the same for both genes in a duplicate pair.}
 #' }
 #'
+#' @export
+#' @rdname compare_tau
 #' @examples
 #' # Load data
 #' data(ath_se)

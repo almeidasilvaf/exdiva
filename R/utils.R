@@ -5,6 +5,8 @@
 #' TPM (or normalized by library size) and a `colData` slot.
 #' @param tissue_column Character indicating the name of the column 
 #' in \code{colData(se)} containing tissue information for each sample.
+#' @param assay_name Character specifying the name of the assay to use. If
+#' NULL, the first assay will be extracted. Default: NULL.
 #' @param aggregation_method Character indicating the method to use to
 #' aggregate samples from the same tissue before calculating \eqn{\tau}
 #' (see details below). One of "median" or "mean". Default: "median".
@@ -26,8 +28,10 @@
 #' # Aggregate expression
 #' aexp <- aggregate_to_tissue(se, "tissue")
 aggregate_to_tissue <- function(
-        se, tissue_column, aggregation_method = "median"
+        se, tissue_column, assay_name = NULL, aggregation_method = "median"
 ) {
+    
+    if(is.null(assay_name)) { assay_name <- 1 }
     
     # Aggregate expression per tissue
     cdata <- as.data.frame(colData(se))
@@ -40,7 +44,7 @@ aggregate_to_tissue <- function(
         
         ## Get expression for samples that belong to tissue {x}
         samples <- rownames(cdata[cdata[[tissue_column]] == x, ])
-        exp_x <- assay(se)[, samples]
+        exp_x <- assay(se, assay_name)[, samples]
         
         ## Aggregate expression to tissue level
         exp_x <- as.matrix(apply(exp_x, 1, aggregation_method, na.rm = TRUE))
@@ -69,21 +73,23 @@ classify_tau <- function(aggregated_exp, tau_df) {
     nstable <- apply(aggregated_exp, 1, function(x) sum(x >= 5))
     
     cdf <- cbind(tau_df, nexpressed, nstable)
-    eclass <- apply(cdf, 1, function(x) {
-        if(is.na(x["tau"])) {
-            c <- NA
-        } else if(x["nexpressed"] == 0) { # not expressed in any tissue
+    eclass <- unlist(lapply(seq_len(nrow(cdf)), function(x) {
+        nexp <- cdf[x, "nexpressed"]
+        ns <- cdf[x, "nstable"]
+        tau <- cdf[x, "tau"]
+
+        if(nexp == 0) { # not expressed in any tissue
             c <- "Null"
-        } else if(x["nstable"] == 0) { # not stably expressed in any tissue
+        } else if(ns == 0) { # not stably expressed in any tissue
             c <- "Weak"
-        } else if(x["nstable"] > 0 & x["tau"] < 0.85) { # stable, Tau <0.85
+        } else if(ns > 0 & tau < 0.85) { # stable, Tau <0.85
             c <- "Broad"
-        } else if(x["nstable"] > 0 & x["tau"] >= 0.85) { # stable, Tau >=0.85
+        } else if(ns > 0 & tau >= 0.85) { # stable, Tau >=0.85
             c <- "Specific"
         }
         
         return(c)
-    })
+    }))
     
     tau_df$class <- factor(
         eclass, levels = c("Null", "Weak", "Broad", "Specific")

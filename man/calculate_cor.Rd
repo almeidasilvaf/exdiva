@@ -4,14 +4,18 @@
 \alias{calculate_cor}
 \title{Calculate correlation coefficients and permutation P-values for gene pairs}
 \usage{
-calculate_cor(se, dups, method = "spearman")
+calculate_cor(se, dups, assay_name = NULL, method = "spearman")
 }
 \arguments{
-\item{se}{A \code{SummarizedExperiment} object with expression data.}
+\item{se}{A \code{SummarizedExperiment} or \code{SingleCellExperiment} or
+\code{SpatialExperiment} object with expression data.}
 
 \item{dups}{A data frame of duplicate pairs, with duplicated genes
 for each pair in columns 1 and 2. Additional columns are allowed, and will
 be ignored if present.}
+
+\item{assay_name}{Character specifying the name of the assay to use. If
+NULL, the first assay will be extracted. Default: NULL.}
 
 \item{method}{Character indicating which correlation coefficient to compute.
 One of 'pearson', 'spearman', or 'kendall'. Default: 'spearman'.}
