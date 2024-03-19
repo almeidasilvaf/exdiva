@@ -7,8 +7,6 @@
 
 [![GitHub
 issues](https://img.shields.io/github/issues/almeidasilvaf/exdiva)](https://github.com/almeidasilvaf/exdiva/issues)
-[![GitHub
-pulls](https://img.shields.io/github/issues-pr/almeidasilvaf/exdiva)](https://github.com/almeidasilvaf/exdiva/pulls)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 [![Codecov test
