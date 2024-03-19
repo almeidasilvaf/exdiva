@@ -1,0 +1,267 @@
+---
+title: "Measuring gene expression divergence between gene pairs"
+author: 
+  - name: Fabricio Almeida-Silva
+    affiliation: |
+      VIB-UGent Center for Plant Systems Biology, Ghent University, 
+      Ghent, Belgium
+  - name: Yves Van de Peer
+    affiliation: |
+      VIB-UGent Center for Plant Systems Biology, Ghent University, 
+      Ghent, Belgium
+output: 
+  BiocStyle::html_document:
+    toc: true
+    number_sections: yes
+bibliography: bibliography.bib
+vignette: >
+  %\VignetteIndexEntry{Measuring gene expression divergence between gene pairs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+    collapse = TRUE,
+    comment = "#>",
+    crop = NULL
+)
+```
+
+# Introduction
+
+Gene and genome duplications are important sources of evolutionary innovation.
+At the transcriptional level, some genes can diverge in expression after 
+duplication, eventually leading to novel functions, while others under
+stronger selection pressures preserve expression levels. To understand the
+evolution of gene expression following duplication, we developed
+`r BiocStyle::Githubpkg("exdiva")`, a package that provides users with a set
+of metrics to compute expression divergence between duplicate pairs.
+`r BiocStyle::Githubpkg("exdiva")` integrates with the Bioconductor ecosystem
+by accepting as input core S4 classes, including `SummarizedExperiment` 
+objects (for bulk RNA-seq data), `SingleCellExperiment` objects (for 
+single-cell RNA-seq data), and `SpatialExperiment` objects (for spatial
+transcriptomics data).
+
+# Installation
+
+You can install `r BiocStyle::Githubpkg("exdiva")` from Bioconductor
+with the following code:
+
+```{r installation, eval = FALSE}
+if(!requireNamespace("BiocManager", quietly = TRUE)) {
+    install.packages("BiocManager")
+}
+
+BiocManager::install("exdiva")
+
+## Check that you have a valid Bioconductor installation
+BiocManager::valid()
+```
+
+Then, you can load the package:
+
+```{r load_package}
+library(exdiva)
+```
+
+We will also load other required packages to use in this vignette.
+
+```{r, message = FALSE}
+library(SummarizedExperiment)
+set.seed(123) # for reproducibility
+```
+
+# Data description
+
+In this vignette, we will use data from a publicly available experiment
+(SRA Study ID: SRP213876) in which authors investigated seed germination in
+*A. thaliana* seeds exposed to red and far-red light [@tognacca2019alternative].
+Expression data in transcripts per million (TPM) were obtained from
+[refine.bio](https://www.refine.bio/) and stored in a `SummarizedExperiment` 
+object. Let's first take a look at them.
+
+```{r}
+# Load expression data
+data(ath_se)
+
+# Show `SummarizedExperiment` object
+ath_se
+
+# Take a look at assay and colData slots
+assay(ath_se) |> head()
+colData(ath_se)
+```
+
+The entire set of duplicated gene pairs in the *A. thaliana* genome was 
+obtained with the Bioconductor package `r BiocStyle::Biocpkg("doubletrouble")`
+[@almeida2024doubletrouble]. Data are stored in a data frame with 3 columns
+as below:
+
+```{r}
+# Load data
+data(ath_dups)
+
+# Take a look at the first rows of the data frame
+head(ath_dups)
+```
+
+To demonstrate metrics that require gene coexpression networks, we used
+`r BiocStyle::Biocpkg("BioNERO")` to infer a signed coexpression network
+with data from @wan2019comparing, available 
+on [refine.bio](https://www.refine.bio/). Then, we saved the data frame
+of module assignment and module eigengenes in the objects below.
+
+```{r}
+# Load and show data frame of genes per module
+data(genes_and_modules)
+head(genes_and_modules)
+
+# Load and show data frame of module eigengenes
+data(ME)
+head(ME)
+```
+
+# Calculating expression divergence
+
+`r BiocStyle::Githubpkg("exdiva")` offers different metrics of expression 
+divergence, namely:
+
+1. Spearman correlations between gene pairs;
+2. The $\tau$ index of tissue specificity;
+3. Co-occurrence in coexpression modules;
+4. Distance between module eigengenes.
+
+## Metric 1: Spearman correlations between gene pairs
+
+To calculate correlations between gene pairs, you will use the function
+`calculate_cor()`, which takes as input an object of class 
+`SummarizedExperiment`, `SingleCellExperiment`, or `SpatialExperiment`.
+
+```{r}
+# Calculate Spearman correlations between gene pairs
+dup10 <- ath_dups[1:10, ] # subset first 10 pairs for demonstration purposes
+cor_df <- calculate_cor(ath_se, dup10)
+
+# Show output
+cor_df
+```
+
+## Metric 2: The $\tau$ index of tissue specificity
+
+The $\tau$ index of tissue specificity ranges from 0 to 1, with values
+close to 0 indicating a broader expression profile across tissues, and
+values close to 1 indicating a more tissue-specific profile. To 
+calculate $\tau$, we need a matrix of gene expression aggregated to tissue 
+level, with genes in rows and tissue names in columns. This can be obtained 
+from a `SummarizedExperiment` object with the function `aggregate_to_tissue()`,
+which calculates the median (or mean) gene expression per tissue using
+a user-defined variable in the `colData` slot. However, since we have 
+samples from a single tissue only, we will simulate 
+a two-tissue data set by modifying our `colData` variable **tissue**:
+
+```{r}
+# Change tissue name in half of the samples
+ath_se$tissue[1:3] <- "leaf"
+colData(ath_se)
+
+# Get median expression per tissue using "tissue" variable in colData
+aexp <- aggregate_to_tissue(ath_se, "tissue")
+
+head(aexp)
+```
+
+Now that we have a matrix of gene expression per tissue, we can use the 
+function `calculate_tau()`. Besides, calculating $\tau$, this function 
+classifies genes into one of four expression-based categories:
+
+1. **Null:** Expression <1 TPM in all tissues.
+2. **Weak:** Expression <5 TPM in all tissues.
+3. **Broad:** $\tau$ <0.85.
+4. **Specific:** $\tau$ >= 0.85.
+
+```{r}
+# Calculate tau index of tissue specificity
+tau_df <- calculate_tau(aexp)
+
+head(tau_df)
+```
+
+Then, this data frame with $\tau$ indices per gene can be used to compare
+expression profiles of duplicated gene pairs using the function `compare_tau()`
+as follows:
+
+```{r}
+# Compare tau indices among duplicated gene pairs
+tau_comp <- compare_tau(tau_df, ath_dups)
+
+head(tau_comp)
+```
+
+The column `tau_diff` indicates the absolute difference in $\tau$ indices 
+between gene pairs, and the column `class_preserved` indicates whether
+expression-based classes are the same in both members of a gene pair.
+
+## Metric 3: Co-occurrence in coexpression modules
+
+Gene coexpression networks can be used to identify cluster of genes with
+very similar expression profiles across samples, which are termed
+**coexpression modules**. Here, `r BiocStyle::Githubpkg("exdiva")`
+uses such information to compare module assignment for genes in a pair and 
+check if they are in the same module (and thus, have similar expression 
+profiles) or in different modules. This can be done with the 
+function `compare_coex_modules()`.
+
+```{r}
+# Compare module assignment between duplicate pairs
+mod_comp <- compare_coex_modules(ath_dups, genes_and_modules)
+
+head(mod_comp)
+```
+
+The variable `module_preservation` summarizes results for each gene pair 
+in a factor with the following levels:
+
+1. **preserved:** Both genes are in the same module.
+2. **diverged:** Genes are in different modules.
+3. **one_absent:** One gene in the pair is not present in any module. This
+could be because the gene is not present in the input expression data 
+(due to low or no expression), or because the module detection algorithm could
+not assign the gene to any module.
+4. **both_absent:** Both genes are not present in any module.
+
+To get the frequency of gene pairs in each category, you can use:
+
+```{r}
+# Get frequency of gene pairs for each category
+table(mod_comp$module_preservation)
+```
+
+## Metric 4: Distance between module eigengenes
+
+Co-occurrence in coexpression modules is binary: genes are either in the
+same module or not. However, genes can be in different, but (somewhat) 
+similar modules, or in completely different modules. In that case, we need
+a way of comparing distance between modules. Here, we do so by calculating
+correlations between module eigengenes (i.e., the first principal
+component of each module, which describes most of the variation). This
+can be done with the function `compare_coex_me()`. Importantly, such
+comparison is only made for genes in the **diverged** category (see previous
+section for details).
+
+```{r}
+# Compare module eigengenes for diverged duplicate pairs
+me_comp <- compare_coex_me(mod_comp, ME)
+
+head(me_comp)
+```
+
+# Session information {.unnumbered}
+
+This document was created under the following conditions:
+
+```{r session_info}
+sessioninfo::session_info()
+```
+
+# References {.unnumbered}
