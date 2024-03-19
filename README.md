@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# exdiva
+# exdiva <img src="man/figures/logo.png" align="right" height="139" alt="" />
 
 <!-- badges: start -->
 
@@ -15,7 +15,14 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 coverage](https://codecov.io/gh/almeidasilvaf/exdiva/branch/devel/graph/badge.svg)](https://app.codecov.io/gh/almeidasilvaf/exdiva?branch=devel)
 <!-- badges: end -->
 
-The goal of `exdiva` is to …
+`exdiva` helps you understand the evolution of gene expression following
+gene and genome duplications by providing you with a set of metrics of
+gene expression divergence, including:
+
+1.  Spearman correlations between gene pairs;
+2.  The $\tau$ index of tissue specificity;
+3.  Co-occurrence in coexpression modules;
+4.  Distance between module eigengenes.
 
 ## Installation instructions
 
@@ -46,11 +53,26 @@ Please run this yourself to check for any updates on how to cite
 
 ``` r
 print(citation('exdiva'), bibtex = TRUE)
+#> To cite package 'exdiva' in publications use:
+#> 
+#>   Almeida-Silva F, Van de Peer Y (2024). _exdiva: A metric set to
+#>   compute expression divergence between gene pairs_. R package version
+#>   0.99.0, <https://github.com/almeidasilvaf/exdiva>.
+#> 
+#> A BibTeX entry for LaTeX users is
+#> 
+#>   @Manual{,
+#>     title = {exdiva: A metric set to compute expression divergence between gene pairs},
+#>     author = {Fabrício Almeida-Silva and Yves {Van de Peer}},
+#>     year = {2024},
+#>     note = {R package version 0.99.0},
+#>     url = {https://github.com/almeidasilvaf/exdiva},
+#>   }
 ```
 
-Please note that the `exdiva` was only made possible thanks to many
-other R and bioinformatics software authors, which are cited either in
-the vignettes and/or the paper(s) describing this package.
+Please note that `exdiva` was only made possible thanks to many other R
+and bioinformatics software authors, which are cited either in the
+vignettes and/or the paper(s) describing this package.
 
 ## Code of Conduct
 
