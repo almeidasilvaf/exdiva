@@ -30,6 +30,7 @@ gene expression divergence, including:
 3. Co-occurrence in coexpression modules;
 4. Distance between module eigengenes.
 
+
 ## Installation instructions
 
 Get the latest stable `R` release from [CRAN](http://cran.r-project.org/). Then install `exdiva` from [Bioconductor](http://bioconductor.org/) using the following code:

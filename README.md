@@ -87,7 +87,7 @@ contributing to this project, you agree to abide by its terms.
   *[rcmdcheck](https://CRAN.R-project.org/package=rcmdcheck)* customized
   to use [Bioconductor’s docker
   containers](https://www.bioconductor.org/help/docker/) and
-  *[BiocCheck](https://bioconductor.org/packages/3.18/BiocCheck)*.
+  *[BiocCheck](https://bioconductor.org/packages/3.19/BiocCheck)*.
 - Code coverage assessment is possible thanks to
   [codecov](https://codecov.io/gh) and
   *[covr](https://CRAN.R-project.org/package=covr)*.
@@ -99,4 +99,4 @@ contributing to this project, you agree to abide by its terms.
   *[roxygen2](https://CRAN.R-project.org/package=roxygen2)*.
 
 This package was developed using
-*[biocthis](https://bioconductor.org/packages/3.18/biocthis)*.
+*[biocthis](https://bioconductor.org/packages/3.19/biocthis)*.
