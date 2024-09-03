@@ -21,7 +21,7 @@ gene expression divergence, including:
 1.  Spearman correlations between gene pairs;
 2.  The $\tau$ index of tissue specificity;
 3.  Co-occurrence in coexpression modules;
-4.  Distance between module eigengenes.
+4.  Dissimilarity between module eigengenes.
 
 ## Installation instructions
 
