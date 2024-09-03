@@ -9,6 +9,7 @@
 issues](https://img.shields.io/github/issues/almeidasilvaf/exdiva)](https://github.com/almeidasilvaf/exdiva/issues)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
+[![check-bioc](https://github.com/almeidasilvaf/exdiva/actions/workflows/rworkflows.devel.yml/badge.svg)](https://github.com/almeidasilvaf/exdiva/actions/workflows/rworkflows.devel.yml)
 [![Codecov test
 coverage](https://codecov.io/gh/almeidasilvaf/exdiva/branch/devel/graph/badge.svg)](https://app.codecov.io/gh/almeidasilvaf/exdiva?branch=devel)
 <!-- badges: end -->
